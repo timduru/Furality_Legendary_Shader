@@ -3,15 +3,17 @@ This is a modified version of the original Furality Legendary Shader
 	-Download link and online Readme of the original Shader located at: https://furality.org/legendaryshader	
 
 The original shader was made to work and be controlled in real time by VJs during Furality's events.
-Outside of furality's worlds there were not automated effects , debug mode provided a few effects but the speed was not configurable. 
+Outside of furality's worlds there were no automated effects, debug mode provided a few effects but the speed was not configurable. 
 
 This modified version of the shader aims to enhance that by adding a few controls to allow a better use of the shader outside of furality's worlds
+through enhancing the Debug / Simulation mode.
 
 Additions:
 
-	-Speed control of the 4 different emissions in debug mode
+	-Speed control of the 4 different emissions in Simulation mode
 	-Basic audio patterns variations
-	-allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission as configured in the shader)
+	-allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission)
+	All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
 
 
 ![image](https://user-images.githubusercontent.com/2088877/141415723-b27392a7-5eeb-4e93-bc4b-1e26d75c6d30.png)

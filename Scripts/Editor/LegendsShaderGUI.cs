@@ -277,7 +277,7 @@ public class LegendsShaderGUI : ShaderGUI
     {
         MaterialProperty toggle = FindProperty("_DebugMode");
         EditorGUI.indentLevel += 2;
-        editor.ShaderProperty(toggle, new GUIContent("Debug Mode", "Toggles dummy data for Luma Glow testing"));
+        editor.ShaderProperty(toggle, new GUIContent("Simulation Mode", "Toggles simulated data for Luma Glow (can be used for debug or in non luma world)"));
         EditorGUI.indentLevel -= 2;
     }
 
@@ -285,7 +285,7 @@ public class LegendsShaderGUI : ShaderGUI
     {
         MaterialProperty toggle = FindProperty("_DisableWorldCtrl");
         EditorGUI.indentLevel += 2;
-        editor.ShaderProperty(toggle, new GUIContent("Disable Emission World Control", "Disable world control temporarily"));
+        editor.ShaderProperty(toggle, new GUIContent("Disable Emission automated Control", "Disable Emission control by wolrd or simulation mode"));
         EditorGUI.indentLevel -= 2;
     }
 
