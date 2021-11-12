@@ -72,6 +72,14 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		[Enum(Back,2,Front,1,Off,0)]_Culling("   Culling", Float) = 2
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
 		[HideInInspector] __dirty( "", Int ) = 1
+		
+		[ToggleUI]_DisableWorldCtrl("   Disable Emission world control", Float) = 0
+		_DebugSpeedEmission("   Emission Speed ", Range( 0.01 , 10)) = 8.0
+		_DebugSpeedR("   Red Speed ", Range( 0.01 , 10)) = 9.5
+		_DebugSpeedG("   Green Speed ", Range( 0.01 , 10)) = 9.0
+		_DebugSpeedB("   Blue Speed ", Range( 0.01 , 10)) = 8.0
+		_DebugAudioPatterns("   Audio patterns variation", Range( 0.01 , 10)) = 9.5
+		
 	}
 
 	SubShader
@@ -179,6 +187,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		uniform float _EnableEmissionGlow;
 		float4 _Stored_TexelSize;
 		uniform float _DebugMode;
+		uniform float _DisableWorldCtrl;
 		uniform sampler2D _Emission;
 		uniform float _EmissionPan;
 		uniform float2 _EmissionPanSpeed;
@@ -236,6 +245,12 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		uniform float _OutlineWidth;
 		uniform float _OutlineDepthFade;
 		uniform float _Cutoff = 0.5;
+
+		uniform float _DebugSpeedEmission = 8;
+		uniform float _DebugSpeedR = 9.5;
+		uniform float _DebugSpeedG = 9;
+		uniform float _DebugSpeedB = 8;
+		uniform float _DebugAudioPatterns = 9.5;
 
 
 		float RoughnessCalc( float nh, float roughness )
@@ -632,6 +647,12 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 
 		void surf( Input i , inout SurfaceOutputCustomLightingCustom o )
 		{
+			float slower  = abs( sin( _Time.y / (10.1 - _DebugSpeedEmission) ) );
+			float slowerR  = abs( sin( _Time.y / (10.1 - _DebugSpeedR)  ) );
+			float slowerG  = abs( sin( _Time.y / (10.1 - _DebugSpeedG )) );
+			float slowerB  = abs( sin( _Time.y / (10.1 - _DebugSpeedB) ) );
+			float audioPatternsVariation  = abs( sin( 100*_Time.y / (10.1 - _DebugAudioPatterns) ) );
+
 			o.SurfInput = i;
 			o.Normal = float3(0,0,1);
 			float2 uv_MainTex = i.uv_texcoord * _MainTex_ST.xy + _MainTex_ST.zw;
@@ -679,7 +700,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 Zone04291_g454 = ( float2( 0.964,0.978 ) - OriginalOffset44_g454 );
 			float2 lerpResult364_g454 = lerp( lerpResult343_g454 , Zone04291_g454 , (float)saturate( ( EmissionZoneIndex47_g454 - 5 ) ));
 			float2 EmissionZoneUV375_g454 = lerpResult364_g454;
-			float temp_output_423_0_g454 = ( 1.0 - _EnableEmissionGlow );
+			float temp_output_423_0_g454 = ( 1.0 - _EnableEmissionGlow );			
 			float StoredTextureTog669_g454 = step( max( _Stored_TexelSize.z , _Stored_TexelSize.w ) , 500.0 );
 			float temp_output_712_0_g454 = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y ) ) ) ) );
 			float3 appendResult65_g454 = (float3(temp_output_712_0_g454 , temp_output_712_0_g454 , temp_output_712_0_g454));
@@ -706,16 +727,21 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 DebugZone4332_g454 = appendResult306_g454;
 			float3 lerpResult379_g454 = lerp( lerpResult362_g454 , DebugZone4332_g454 , (float)saturate( ( EmissionZoneIndex47_g454 - 5 ) ));
 			float EnableGlowMaskEmission683_g454 = temp_output_423_0_g454;
-			float3 DebugEmissionColor399_g454 = saturate( ( lerpResult379_g454 + EnableGlowMaskEmission683_g454 ) );
+			float3 DebugEmissionColor399_g454 = saturate( ( lerpResult379_g454 + EnableGlowMaskEmission683_g454 ) ) ;
+			DebugEmissionColor399_g454 -= slower;
+			
 			float DebugSwitch628_g454 = _DebugMode;
-			float4 lerpResult634_g454 = lerp( saturate( ( tex2Dlod( _Stored, float4( EmissionZoneUV375_g454, 0, 0.0) ) + temp_output_423_0_g454 + StoredTextureTog669_g454 ) ) , float4( DebugEmissionColor399_g454 , 0.0 ) , DebugSwitch628_g454);
+			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( EmissionZoneUV375_g454, 0, 0.0) ) + temp_output_423_0_g454 + StoredTextureTog669_g454 ) ) , float4( DebugEmissionColor399_g454 , 0.0 ) , DebugSwitch628_g454);			
+			lerpResult634_g454 = lerp(lerpResult634_g454, 1, _DisableWorldCtrl);
+			
 			float2 uv_Emission = i.uv_texcoord * _Emission_ST.xy + _Emission_ST.zw;
 			float2 panner1666 = ( 1.0 * _Time.y * ( _EmissionPan * _EmissionPanSpeed ) + uv_Emission);
 			float2 uv_EmissionMask = i.uv_texcoord * _EmissionMask_ST.xy + _EmissionMask_ST.zw;
 			float3 Emission436_g454 = ( tex2D( _Emission, panner1666 ) * _EmissionColor * tex2D( _EmissionMask, uv_EmissionMask ).r ).rgb;
 			float4 EmissionGlowColor471_g454 = ( lerpResult634_g454 * float4( Emission436_g454 , 0.0 ) );
-			float2 ReactiveZone365_g454 = ( float2( 0.673,0.985 ) - OriginalOffset44_g454 );
-			float mulTime293_g454 = _Time.y * 13.0;
+			float2 ReactiveZone365_g454 = ( float2( 0.673,0.985 ) - OriginalOffset44_g454 );			
+			float mulTime293_g454 = abs(_Time.y - audioPatternsVariation);
+			
 			float3 appendResult390_g454 = (float3(saturate( sin( mulTime293_g454 ) ) , saturate( sin( ( mulTime293_g454 + 0.5 ) ) ) , 0.0));
 			float4 lerpResult637_g454 = lerp( saturate( ( StoredTextureTog669_g454 + tex2D( _Stored, ReactiveZone365_g454 ) ) ) , float4( appendResult390_g454 , 0.0 ) , DebugSwitch628_g454);
 			float4 break417_g454 = lerpResult637_g454;
@@ -752,6 +778,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 lerpResult387_g454 = lerp( lerpResult363_g454 , DebugZone4332_g454 , (float)saturate( ( GlowMaskRIndex48_g454 - 5 ) ));
 			float EnableGlowMaskR682_g454 = temp_output_424_0_g454;
 			float3 DebugGlowMaskR397_g454 = saturate( ( lerpResult387_g454 + EnableGlowMaskR682_g454 ) );
+			DebugGlowMaskR397_g454 -= slowerR;
+			
 			float4 lerpResult633_g454 = lerp( saturate( ( tex2Dlod( _Stored, float4( GlowMaskZoneRUV376_g454, 0, 0.0) ) + temp_output_424_0_g454 + StoredTextureTog669_g454 ) ) , float4( DebugGlowMaskR397_g454 , 0.0 ) , DebugSwitch628_g454);
 			float2 uv_GlowMaskRGB = i.uv_texcoord * _GlowMaskRGB_ST.xy + _GlowMaskRGB_ST.zw;
 			float3 GlowMask605_g454 = (tex2D( _GlowMaskRGB, uv_GlowMaskRGB ).rgb).xyz;
@@ -779,6 +807,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 lerpResult388_g454 = lerp( lerpResult354_g454 , DebugZone4332_g454 , (float)saturate( ( GlowMaskGIndex45_g454 - 5 ) ));
 			float EnableGlowMaskG681_g454 = temp_output_419_0_g454;
 			float3 DebugGlowMaskG396_g454 = saturate( ( lerpResult388_g454 + EnableGlowMaskG681_g454 ) );
+			DebugGlowMaskG396_g454 -= slowerG;
+			
 			float4 lerpResult630_g454 = lerp( saturate( ( tex2Dlod( _Stored, float4( GlowMaskZoneGUV385_g454, 0, 0.0) ) + temp_output_419_0_g454 + StoredTextureTog669_g454 ) ) , float4( DebugGlowMaskG396_g454 , 0.0 ) , DebugSwitch628_g454);
 			float4 GlowMaskZoneGColor472_g454 = ( lerpResult630_g454 * _GlowMaskTintG * GlowMask605_g454.y );
 			int ReactivityIndexG467_g454 = _ReacitvityG;
@@ -804,6 +834,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 lerpResult384_g454 = lerp( lerpResult360_g454 , DebugZone4332_g454 , (float)saturate( ( GlowMaskBIndex50_g454 - 5 ) ));
 			float EnableGlowMaskB680_g454 = temp_output_421_0_g454;
 			float3 DebugGlowMaskB401_g454 = saturate( ( lerpResult384_g454 + EnableGlowMaskB680_g454 ) );
+			DebugGlowMaskB401_g454 -= slowerB;
+			
 			float4 lerpResult626_g454 = lerp( saturate( ( tex2Dlod( _Stored, float4( GlowMaskZoneBUV383_g454, 0, 0.0) ) + temp_output_421_0_g454 + StoredTextureTog669_g454 ) ) , float4( DebugGlowMaskB401_g454 , 0.0 ) , DebugSwitch628_g454);
 			float4 GlowMaskZoneBColor466_g454 = ( lerpResult626_g454 * _GlowMaskTintB * GlowMask605_g454.z );
 			int ReactivityIndexB480_g454 = _ReacitvityB;

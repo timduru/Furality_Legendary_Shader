@@ -281,6 +281,14 @@ public class LegendsShaderGUI : ShaderGUI
         EditorGUI.indentLevel -= 2;
     }
 
+    void DoWorldControl()
+    {
+        MaterialProperty toggle = FindProperty("_DisableWorldCtrl");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(toggle, new GUIContent("Disable Emission World Control", "Disable world control temporarily"));
+        EditorGUI.indentLevel -= 2;
+    }
+
     //MaskClipCheck
 
     void DoMaskClip()
@@ -835,6 +843,26 @@ public class LegendsShaderGUI : ShaderGUI
         EditorGUI.indentLevel -= 2;
     }
 
+    void DoDebugControl()
+    {
+        EditorGUI.indentLevel += 2;
+		
+        MaterialProperty slider = FindProperty("_DebugSpeedEmission");
+        editor.ShaderProperty(slider, MakeLabel(slider));
+		
+        slider = FindProperty("_DebugSpeedR");
+        editor.ShaderProperty(slider, MakeLabel(slider));
+        slider = FindProperty("_DebugSpeedG");
+        editor.ShaderProperty(slider, MakeLabel(slider));
+        slider = FindProperty("_DebugSpeedB");
+        editor.ShaderProperty(slider, MakeLabel(slider));
+		
+        slider = FindProperty("_DebugAudioPatterns");
+        editor.ShaderProperty(slider, MakeLabel(slider));
+		
+        EditorGUI.indentLevel -= 2;
+    }
+
     //Draw GUI
 
     public override void OnGUI(
@@ -907,7 +935,7 @@ public class LegendsShaderGUI : ShaderGUI
             {
                 DoSimpleRimlight();
             }
-
+			
             //Advanced Lighting Settings
             //if (advMode == 1)
             //{
@@ -963,7 +991,11 @@ public class LegendsShaderGUI : ShaderGUI
         GUILayout.Label("Misc Settings", EditorStyles.boldLabel);
         DoMaskClip();
         DoCullingMode();
-        DoDebugMode();
+		
+        DoWorldControl();
+        DoDebugMode();		
+	    DoDebugControl();
+		
         GUILayout.Label(" ");
         editor.RenderQueueField();
     }

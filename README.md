@@ -266,7 +266,8 @@ Shader Properties:
 
 Credits:
 
-	- Original Shader created by Naito Ookami
+	- Original Shader: created by Naito Ookami
+	- Additions: Timduru 
 
 	- X-Bot model: 
 		https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
