@@ -1,14 +1,24 @@
+This is a modified version of the original Furality Legendary Shader
+
+	-Download link and online Readme of the original Shader located at: https://furality.org/legendaryshader	
+
+The original shader was made to work and be controlled in real time by VJs during Furality's events.
+Outside of furality's worlds there were not automated effects , debug mode provided a few effects but the speed was not configurable. 
+
+This modified version of the shader aims to enhance that by adding a few controls to allow a better use of the shader outside of furality's worlds
+
+Additions:
+
+	-Speed control of the 4 different emissions in debug mode
+	-Basic audio patterns variations
+	-allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission as configured in the shader)
 
 
-Download link and online Readme located at: https://furality.org/legendaryshader	
-	
-	
-	-The Furality Legendary Shader-
-		Thank you for using the Legendary Shader!
+![image](https://user-images.githubusercontent.com/2088877/141415723-b27392a7-5eeb-4e93-bc4b-1e26d75c6d30.png)
 
-What it does:
+Original shader features:
 
-	-This shader stylizes lighting effects to match our world's artstyle-
+	-This shader stylizes lighting effects to match Furality's worlds artstyle-
 	
 		The Furality Legendary Shader allows you to pick between a selection of stylized lighting
 		effects.  These effects are designed to help you match your avatar to our world's artstyle.
@@ -255,9 +265,13 @@ Shader Properties:
 
 
 Credits:
-Shader created by Naito Ookami
 
-X-Bot model: 
-https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
+	- Original Shader created by Naito Ookami
 
+	- X-Bot model: 
+		https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
+
+License:
+	https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US
+	
 	
