@@ -78,7 +78,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		_DebugSpeedR("   Red Speed ", Range( 0.01 , 10)) = 9.5
 		_DebugSpeedG("   Green Speed ", Range( 0.01 , 10)) = 9.0
 		_DebugSpeedB("   Blue Speed ", Range( 0.01 , 10)) = 8.0
-		_DebugAudioPatterns("   Audio patterns variation", Range( 0.01 , 10)) = 4
+		_DebugAudioPatterns("   Audio patterns variation", Range( 0.01 , 10)) = 0.5
 		
 	}
 
@@ -250,7 +250,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		uniform float _DebugSpeedR = 9.5;
 		uniform float _DebugSpeedG = 9;
 		uniform float _DebugSpeedB = 8;
-		uniform float _DebugAudioPatterns = 5;
+		uniform float _DebugAudioPatterns = 0.5;
 
 
 		float3 GetZoneResult( int zone, float3 Zone0, float3 Zone1, float3 Zone2, float3 Zone3, float3 Zone4, float3 Zone5, float3 Zone6)
@@ -677,11 +677,11 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 
 		void surf( Input i , inout SurfaceOutputCustomLightingCustom o )
 		{
-			float slower  = abs( sin( _Time.y *_DebugSpeedEmission ) );
-			float slowerR  = abs( sin( _Time.y * _DebugSpeedR  ) );
-			float slowerG  = abs( sin( _Time.y * _DebugSpeedG ) );
-			float slowerB  = abs( sin( _Time.y *_DebugSpeedB) );
-			float audioPatternsVariation  = abs( sin( 100*_Time.y * _DebugAudioPatterns ) );
+			float speed  = abs( sin( _Time.y *_DebugSpeedEmission ) );
+			float speedR  = abs( sin( _Time.y * _DebugSpeedR  ) );
+			float speedG  = abs( sin( _Time.y * _DebugSpeedG ) );
+			float speedB  = abs( sin( _Time.y *_DebugSpeedB) );
+			float audioPatternsVariation  = abs( sin( 10*_Time.y * _DebugAudioPatterns ) );
 
 			o.SurfInput = i;
 			o.Normal = float3(0,0,1);
@@ -760,7 +760,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 DebugZone4332_g454 = appendResult306_g454;
 			float3 lerpResult379_g454 = lerp( lerpResult362_g454 , DebugZone4332_g454 , (float)saturate( ( EmissionZoneIndex47_g454 - 5 ) ));
 			float EnableGlowMaskEmission683_g454 = temp_output_423_0_g454;
-			float3 DebugEmissionColor399_g454 = slower * saturate( ( lerpResult379_g454 + EnableGlowMaskEmission683_g454) ) ;
+			float3 DebugEmissionColor399_g454 = speed * saturate( ( lerpResult379_g454 + EnableGlowMaskEmission683_g454) ) ;
 			
 						
 			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( EmissionZoneUV375_g454, 0, 0.0) ) + temp_output_423_0_g454 + StoredTextureTo ) ) , float4( DebugEmissionColor399_g454 , 0.0 ) , _DebugMode);			
@@ -771,28 +771,38 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 uv_EmissionMask = i.uv_texcoord * _EmissionMask_ST.xy + _EmissionMask_ST.zw;
 			float3 Emission436_g454 = ( tex2D( _Emission, panner1666 ) * _EmissionColor * tex2D( _EmissionMask, uv_EmissionMask ).r ).rgb;
 			float4 EmissionGlowColor471_g454 = ( lerpResult634_g454 * float4( Emission436_g454 , 0.0 ) );
-			float2 ReactiveZone365_g454 = ( float2( 0.673,0.985 ) - OriginalOffset44_g454 );			
-			float mulTime293_g454 = abs(_Time.y * audioPatternsVariation);
+			float2 AudioReactiveZone = ( float2( 0.673,0.985 ) - OriginalOffset44_g454 );			
+
+// AUDIO SIMU
+			float2 debugAudioData = float2( saturate(sin( audioPatternsVariation ))  , saturate( sin( ( audioPatternsVariation + 0.5 ) ) ) );			
+			//.x = low, .y=high
 			
-			float3 appendResult390_g454 = (float3(saturate( sin( mulTime293_g454 ) ) , saturate( sin( ( mulTime293_g454 + 0.5 ) ) ) , 0.0));
-			float4 lerpResult637_g454 = lerp( saturate( ( StoredTextureTo + tex2D( _Stored, ReactiveZone365_g454 ) ) ) , float4( appendResult390_g454 , 0.0 ) , _DebugMode);
-			float4 break417_g454 = lerpResult637_g454;
-			float LowBlink431_g454 = break417_g454.r;
-			int ReactivityIndexEmission470_g454 = _EmissionReactivity;
-			float4 lerpResult532_g454 = lerp( EmissionGlowColor471_g454 , ( EmissionGlowColor471_g454 * LowBlink431_g454 ) , (float)saturate( ReactivityIndexEmission470_g454 ));
+// AUDIO CALC			
+			float4 audioInfo = lerp( saturate( ( StoredTextureTo + tex2D( _Stored, AudioReactiveZone ) ) ) , float4( debugAudioData , 0.0, 0.0 ) , _DebugMode);
+			
+	//LOW
+			float LowInfo = audioInfo.x;
+			
+			float4 LowBlink = lerp( EmissionGlowColor471_g454 , ( EmissionGlowColor471_g454 * LowInfo ) , (float)saturate( _EmissionReactivity ));
 			float cos437_g454 = cos( radians( _LowsPulseDirection ) );
 			float sin437_g454 = sin( radians( _LowsPulseDirection ) );
 			float2 rotator437_g454 = mul( i.uv_texcoord - float2( 0.5,0.5 ) , float2x2( cos437_g454 , -sin437_g454 , sin437_g454 , cos437_g454 )) + float2( 0.5,0.5 );
-			float LowPulse493_g454 = saturate( ( rotator437_g454.y - ( 1.0 - LowBlink431_g454 ) ) );
-			float4 lerpResult580_g454 = lerp( lerpResult532_g454 , ( EmissionGlowColor471_g454 * LowPulse493_g454 ) , (float)saturate( ( ReactivityIndexEmission470_g454 - 1 ) ));
-			float HighBlink464_g454 = break417_g454.g;
-			float4 lerpResult590_g454 = lerp( lerpResult580_g454 , ( EmissionGlowColor471_g454 * HighBlink464_g454 ) , (float)saturate( ( ReactivityIndexEmission470_g454 - 2 ) ));
+			
+			float LowPulse = saturate( ( rotator437_g454.y - ( 1.0 - LowInfo ) ) );
+			float4 lerpResult580_g454 = lerp( LowBlink , ( EmissionGlowColor471_g454 * LowPulse ) , (float)saturate( ( _EmissionReactivity - 1 ) ));
+	//HIGH	
+			float HighInfo = audioInfo.y;
+			
+			float4 HighBlink = lerp( lerpResult580_g454 , ( EmissionGlowColor471_g454 * HighInfo ) , (float)saturate( ( _EmissionReactivity - 2 ) ));
 			float cos456_g454 = cos( radians( _HighsPulseDirection ) );
 			float sin456_g454 = sin( radians( _HighsPulseDirection ) );
 			float2 rotator456_g454 = mul( i.uv_texcoord - float2( 0.5,0.5 ) , float2x2( cos456_g454 , -sin456_g454 , sin456_g454 , cos456_g454 )) + float2( 0.5,0.5 );
-			float HighPulse556_g454 = saturate( ( rotator456_g454.y - ( 1.0 - HighBlink464_g454 ) ) );
-			float4 lerpResult596_g454 = lerp( lerpResult590_g454 , ( EmissionGlowColor471_g454 * HighPulse556_g454 ) , (float)saturate( ( ReactivityIndexEmission470_g454 - 3 ) ));
-			float4 FinalGlowEmission600_g454 = lerpResult596_g454;
+			
+			float HighPulse = saturate( ( rotator456_g454.y - ( 1.0 - HighInfo ) ) );
+			float4 lerpResult596_g454 = lerp( HighBlink , ( EmissionGlowColor471_g454 * HighPulse ) , (float)saturate( ( _EmissionReactivity - 3 ) ));
+
+	//FINAL
+			float4 FinalGlowEmission = lerpResult596_g454;
 
 			float2 uv_GlowMaskRGB = i.uv_texcoord * _GlowMaskRGB_ST.xy + _GlowMaskRGB_ST.zw;
 			float3 GlowMask605_g454 = (tex2D( _GlowMaskRGB, uv_GlowMaskRGB ).rgb).xyz;
@@ -804,11 +814,11 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float4 lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 			
 			float3 debugZoneResult = GetZoneResult(_EnableGlowMaskR, DebugGradient1111_g454,DebugGradient2110_g454,DebugGradient3173_g454, DebugZone1195_g454,DebugZone2250_g454,DebugZone3309_g454,DebugZone4332_g454);
-			float3 debugGlow = slowerR * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
+			float3 debugGlow = speedR * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
 			
 			float4 lerpResult633_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
 			
-			float4 FinalGlowR = GetAudioAndTint(lerpResult633_g454 , GlowMask605_g454, _GlowMaskTintR, _ReacitvityR, _EnableGlowMaskR, LowBlink431_g454, LowPulse493_g454, HighBlink464_g454, HighPulse556_g454);		
+			float4 FinalGlowR = GetAudioAndTint(lerpResult633_g454 , GlowMask605_g454, _GlowMaskTintR, _ReacitvityR, _EnableGlowMaskR, LowInfo, LowPulse, HighInfo, HighPulse);		
 
 
 //GREEN
@@ -818,11 +828,11 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 
 			debugZoneResult = GetZoneResult(_GlowMaskZoneG, DebugGradient1111_g454,DebugGradient2110_g454,DebugGradient3173_g454, DebugZone1195_g454,DebugZone2250_g454,DebugZone3309_g454,DebugZone4332_g454);
-			debugGlow = slowerG * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
+			debugGlow = speedG * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
 			
 			float4 lerpResult630_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
 			
-			float4 FinalGlowG = GetAudioAndTint(lerpResult630_g454 , GlowMask605_g454, _GlowMaskTintG, _ReacitvityG, _EnableGlowMaskG, LowBlink431_g454, LowPulse493_g454, HighBlink464_g454, HighPulse556_g454);				
+			float4 FinalGlowG = GetAudioAndTint(lerpResult630_g454 , GlowMask605_g454, _GlowMaskTintG, _ReacitvityG, _EnableGlowMaskG, LowInfo, LowPulse, HighInfo, HighPulse);				
 			
 // BLUE			
 			glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskB );			
@@ -831,13 +841,13 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 
 			debugZoneResult = GetZoneResult(_GlowMaskZoneB, DebugGradient1111_g454,DebugGradient2110_g454,DebugGradient3173_g454, DebugZone1195_g454,DebugZone2250_g454,DebugZone3309_g454,DebugZone4332_g454);			
-			debugGlow =  slowerB * saturate( ( debugZoneResult + glowMaskNotEnabled) );			
+			debugGlow =  speedB * saturate( ( debugZoneResult + glowMaskNotEnabled) );			
 			
 			float4 lerpResult626_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
-			float4 FinalGlowB = GetAudioAndTint(lerpResult626_g454 , GlowMask605_g454, _GlowMaskTintB, _ReacitvityB, _EnableGlowMaskB, LowBlink431_g454, LowPulse493_g454, HighBlink464_g454, HighPulse556_g454);		
+			float4 FinalGlowB = GetAudioAndTint(lerpResult626_g454 , GlowMask605_g454, _GlowMaskTintB, _ReacitvityB, _EnableGlowMaskB, LowInfo, LowPulse, HighInfo, HighPulse);		
 
 //FINAL			
-			float4 FinalEmission = ( FinalGlowEmission600_g454 + FinalGlowR + FinalGlowG + FinalGlowB );
+			float4 FinalEmission = ( FinalGlowEmission + FinalGlowR + FinalGlowG + FinalGlowB );
 			o.Emission = FinalEmission.rgb;
 		}
 
