@@ -8,17 +8,25 @@ Outside of furality's worlds there were no automated effects, debug mode provide
 This modified version of the shader aims to enhance that by adding a few controls to allow a better use of the shader outside of furality's worlds
 through enhancing the Debug / Simulation mode.
 
-Additions:
+# Additions
+ ## AudioLink Support
+Basic Support Added: 
+- Luma Low Band  => AudioLink Bass band
+- Luma High Band => AudioLink Treble band
 
-	-Speed control of the 4 different emissions in Simulation mode
-	-Basic audio patterns variations
-	-allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission)
-	All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
+
+ ## Simulation mode
+
+- Speed control of the 4 different emissions in Simulation mode
+- Basic audio patterns variations
+- allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission)
+
+All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
 
 ![image](https://user-images.githubusercontent.com/2088877/141443130-8b3471b4-702c-47c3-ae3c-376f4095f1f3.png)
 
 
-Original shader features:
+# Original shader features
 
 	-This shader stylizes lighting effects to match Furality's worlds artstyle-
 	
@@ -61,7 +69,7 @@ Original shader features:
 		Our worlds will tint your emission color by another color they send.
 		If you want to recieve our world colors exactly without tinting, use a white and black emission.
 
-How to apply:
+## How to apply
 		
 	-Avatar Application-
 	
@@ -71,7 +79,7 @@ How to apply:
 		4. Drag it onto your avatar
 		5. Apply your textures and adjust material settings as needed
 
-Shader Properties:
+## Shader Properties
 
 	-New custom GUI for ease of use-
 
@@ -266,7 +274,7 @@ Shader Properties:
 			Highs Pulse Direction: Changes the direction of all auido reactive highs pulses
 
 
-Credits:
+# Credits
 
 	- Original Shader: created by Naito Ookami
 	- Additions: Timduru 
@@ -274,7 +282,7 @@ Credits:
 	- X-Bot model: 
 		https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
 
-License:
+# License
 	https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US
 	
 	
