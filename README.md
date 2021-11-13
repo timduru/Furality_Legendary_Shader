@@ -26,7 +26,7 @@ All these can be animated/changed in real time for more versatility so you can c
 
 ![image](https://user-images.githubusercontent.com/2088877/141415723-b27392a7-5eeb-4e93-bc4b-1e26d75c6d30.png)
 
-Original shader features:
+# Original shader features
 
 	-This shader stylizes lighting effects to match Furality's worlds artstyle-
 	
@@ -69,7 +69,7 @@ Original shader features:
 		Our worlds will tint your emission color by another color they send.
 		If you want to recieve our world colors exactly without tinting, use a white and black emission.
 
-How to apply:
+## How to apply
 		
 	-Avatar Application-
 	
@@ -79,7 +79,7 @@ How to apply:
 		4. Drag it onto your avatar
 		5. Apply your textures and adjust material settings as needed
 
-Shader Properties:
+## Shader Properties
 
 	-New custom GUI for ease of use-
 
@@ -274,7 +274,7 @@ Shader Properties:
 			Highs Pulse Direction: Changes the direction of all auido reactive highs pulses
 
 
-Credits:
+# Credits
 
 	- Original Shader: created by Naito Ookami
 	- Additions: Timduru 
@@ -282,7 +282,7 @@ Credits:
 	- X-Bot model: 
 		https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
 
-License:
+# License
 	https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US
 	
 	
