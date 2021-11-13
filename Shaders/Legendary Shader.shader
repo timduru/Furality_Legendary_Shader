@@ -80,6 +80,9 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		_DebugSpeedB("   Blue Speed ", Range( 0.01 , 10)) = 8.0
 		_DebugAudioPatterns("   Audio patterns variation", Range( 0.01 , 10)) = 0.5
 		
+		
+		_AudioLink("AudioLink Texture", 2D) = "black" {}		
+		[ToggleUI]_AudioLinkOn("   AudioLink", Float) = 1
 	}
 
 	SubShader
@@ -136,6 +139,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		#include "UnityShaderVariables.cginc"
 		#include "UnityCG.cginc"
 		#include "Lighting.cginc"
+		#include "../AudioLink/AudioLink.cginc"
+
 		#pragma target 3.0
 		#ifdef UNITY_PASS_SHADOWCASTER
 			#undef INTERNAL_DATA
@@ -153,6 +158,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			half ASEVFace : VFACE;
 			float3 worldPos;
 			float4 screenPosition2051;
+			float3 ALAudioInfo;
 		};
 
 		struct SurfaceOutputCustomLightingCustom
@@ -252,6 +258,9 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		uniform float _DebugSpeedG = 9;
 		uniform float _DebugSpeedB = 8;
 		uniform float _DebugAudioPatterns = 0.5;
+
+		uniform float _AudioLinkOn = 1;
+		
 
 
 		float3 GetZoneResult( int zone, float3 Zone0, float3 Zone1, float3 Zone2, float3 Zone3, float3 Zone4, float3 Zone5, float3 Zone6)
@@ -752,7 +761,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 
 // ===== MAIN EMISSION =====
 			float2 lumaZone =  GetZoneResult(_EmissionZone, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
-			float3 debugZoneResult =  debugZoneResult =  GetZoneResult(_EmissionZone, DebugGradient1, DebugGradient2, DebugGradient3, DebugZone1, DebugZone2, DebugZone3, DebugZone4);
+			float3 debugZoneResult =  GetZoneResult(_EmissionZone, DebugGradient1, DebugGradient2, DebugGradient3, DebugZone1, DebugZone2, DebugZone3, DebugZone4);
 			float3 DebugEmissionColor = speed * saturate( ( debugZoneResult + glowMaskInverted) ) ;
 					
 			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( lumaZone, 0, 0.0) ) + glowMaskInverted + StoredTextureTo ) ) , float4( DebugEmissionColor , 0.0 ) , _DebugMode);			
@@ -763,19 +772,38 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 uv_EmissionMask = i.uv_texcoord * _EmissionMask_ST.xy + _EmissionMask_ST.zw;
 			float3 Emission436_g454 = ( tex2D( _Emission, panner1666 ) * _EmissionColor * tex2D( _EmissionMask, uv_EmissionMask ).r ).rgb;
 			float4 EmissionGlowColor471_g454 = ( lerpResult634_g454 * float4( Emission436_g454 , 0.0 ) );
-			float2 AudioReactiveZone = ( float2( 0.673,0.985 ) - offsetHeroesVilains );			
 
 
 // ===== AUDIO REACTION =====
 // AUDIO SIMU
 			float2 debugAudioData = float2( saturate(sin( audioPatternsVariation ))  , saturate( sin( ( audioPatternsVariation + 0.5 ) ) ) );			
-			//.x = low, .y=high
+			//.r = low, .g=high
 			
-// AUDIO CALC			
-			float4 audioInfo = lerp( saturate( ( StoredTextureTo + tex2D( _Stored, AudioReactiveZone ) ) ) , float4( debugAudioData , 0.0, 0.0 ) , _DebugMode);
+// LUMA AUDIO
+			float2 lumaAudioReactiveZone = ( float2( 0.673,0.985 ) - offsetHeroesVilains );			
+			float2 lumaAudioData = saturate( ( StoredTextureTo + tex2D( _Stored, lumaAudioReactiveZone ) ) );			
+
+// AUDIOLINK AUDIO
+			float2 ALAudioData = i.ALAudioInfo;
+			float AL_ALLBands = AudioLinkData(ALPASS_AUDIOLINK).r;
+			float AL_Bass = AudioLinkData(ALPASS_AUDIOBASS).r;
+			float AL_LOWMIDs = AudioLinkData(ALPASS_AUDIOLOWMIDS).r;
+			float AL_HIGHMIDs = AudioLinkData(ALPASS_AUDIOHIGHMIDS).r;
+			float AL_TREBLE = AudioLinkData(ALPASS_AUDIOTREBLE).r;
+
+			float4 ALBands = float4(AL_Bass, AL_LOWMIDs, AL_HIGHMIDs, AL_TREBLE);
+
+			float2 ALTriggerData = float2(AL_Bass, AL_TREBLE);
+
+
+// AUDIO CALC
+//TODO autoswitch between Luma and AudioLink
+			float2 audioInfo = lerp(lumaAudioData, debugAudioData  , _DebugMode);
+			audioInfo = lerp(audioInfo, ALTriggerData, _AudioLinkOn);
+
 			
 	//LOW
-			float LowInfo = audioInfo.x;
+			float LowInfo = audioInfo.r;
 			
 			float4 LowBlink = lerp( EmissionGlowColor471_g454 , ( EmissionGlowColor471_g454 * LowInfo ) , (float)saturate( _EmissionReactivity ));
 			float cos437_g454 = cos( radians( _LowsPulseDirection ) );
@@ -785,7 +813,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float LowPulse = saturate( ( rotator437_g454.y - ( 1.0 - LowInfo ) ) );
 			float4 lerpResult580_g454 = lerp( LowBlink , ( EmissionGlowColor471_g454 * LowPulse ) , (float)saturate( ( _EmissionReactivity - 1 ) ));
 	//HIGH	
-			float HighInfo = audioInfo.y;
+			float HighInfo = audioInfo.g;
 			
 			float4 HighBlink = lerp( lerpResult580_g454 , ( EmissionGlowColor471_g454 * HighInfo ) , (float)saturate( ( _EmissionReactivity - 2 ) ));
 			float cos456_g454 = cos( radians( _HighsPulseDirection ) );
@@ -870,6 +898,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "UnityPBSLighting.cginc"
+
+
 			struct v2f
 			{
 				V2F_SHADOW_CASTER;
@@ -877,6 +907,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 				float4 tSpace0 : TEXCOORD2;
 				float4 tSpace1 : TEXCOORD3;
 				float4 tSpace2 : TEXCOORD4;
+
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
@@ -902,6 +933,9 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 				TRANSFER_SHADOW_CASTER_NORMALOFFSET( o )
 				return o;
 			}
+
+
+
 			half4 frag( v2f IN
 			#if !defined( CAN_SKIP_VPOS )
 			, UNITY_VPOS_TYPE vpos : VPOS
@@ -920,8 +954,20 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 				surfIN.internalSurfaceTtoW1 = IN.tSpace1.xyz;
 				surfIN.internalSurfaceTtoW2 = IN.tSpace2.xyz;
 				SurfaceOutputCustomLightingCustom o;
-				UNITY_INITIALIZE_OUTPUT( SurfaceOutputCustomLightingCustom, o )
-				surf( surfIN, o );
+				UNITY_INITIALIZE_OUTPUT(SurfaceOutputCustomLightingCustom, o)
+
+					// AUDIOLINK 				
+					float band = 0.0390;
+				float2 coord = float2(0.0039, band);
+				//float2 val = tex2D(_AudioLink, coord).x;
+
+				surfIN.ALAudioInfo = AudioLinkData(ALPASS_AUDIOLINK + uint2(0, surfIN.uv_texcoord.y * 4.)).rrrr;
+				
+					
+				//saturate(tex2D(_AudioTexture, float2(ALZoneCoord, 0.3516)));
+
+// SURF			
+				surf( surfIN, o);
 				#if defined( CAN_SKIP_VPOS )
 				float2 vpos = IN.pos;
 				#endif
