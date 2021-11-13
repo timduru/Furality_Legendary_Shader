@@ -707,7 +707,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 // LUMA TEXTURE
 			float StoredTextureTo = step( max( _Stored_TexelSize.z , _Stored_TexelSize.w ) , 500.0 );
 			
-//ZONE INFO EXTRACT
+//LUMA ZONE INFO EXTRACT
 	// GRADIENT ZONES x3
 			float4 coordZone01 = float4(9.4,0,0.57,0.49);
 			float2 appendResult34_g454 = (float2(( 1.0 / coordZone01.x ) , 0.0));
@@ -730,46 +730,30 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 Zone02 = ( float2( 0.964,0.992 ) - offsetHeroesVilains );
 			float2 Zone03 = ( float2( 0.955,0.978 ) - offsetHeroesVilains );
 			float2 Zone04 = ( float2( 0.964,0.978 ) - offsetHeroesVilains );
-
-//DEBUG ZONE INFO GENERATE
-
 			
-// MAIN EMISSION	
+//  GENERATE DEBUG ZONE INFO
 			float glowMaskInverted = ( 1.0 - _EnableEmissionGlow );
-		
-	//LUMA2 ZONES			
-			float2 lumaZone =  GetZoneResult(_EmissionZone, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
-			
-//DEBUG ZONES			
-	
+	// GRADIENT ZONES x3
 			float tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y ) ) ) ) );
 			float3 DebugGradient1 = (float3(tempF , tempF , tempF));
 			
 			tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y + 0.3 ) ) ) ) );
 			float3 DebugGradient2 = (float3(tempF , tempF , 0.0));
-
+			
 			tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y + 0.6 ) ) ) ) );
 			float3 DebugGradient3 = (float3(0.0 , tempF , tempF));			
 
-			float3 lerpResult181_g454 = lerp( DebugGradient1 , DebugGradient2 , (float)saturate( _EmissionZone ));
-			float3 lerpResult244_g454 = lerp( lerpResult181_g454 , DebugGradient3 , (float)saturate( ( _EmissionZone - 1 ) ));
-
-			float3 DebugZone1 = (float3(0.0 , 0.0 , saturate( ( 1.0 - abs( sin( _Time.y ) ) ) )));			
-			float3 lerpResult278_g454 = lerp( lerpResult244_g454 , DebugZone1 , (float)saturate( ( _EmissionZone - 2 ) ));
-			float temp_output_716_0_g454 = saturate( ( 1.0 - abs( sin( ( _Time.y + 0.2 ) ) ) ) );
-			float3 DebugZone2 = (float3(temp_output_716_0_g454 , temp_output_716_0_g454 , temp_output_716_0_g454));
-			
-			float3 lerpResult352_g454 = lerp( lerpResult278_g454 , DebugZone2 , (float)saturate( ( _EmissionZone - 3 ) ));
+	// HEROES / VILAIN ZONES x4
+			float3 DebugZone1 = (float3(0.0 , 0.0 , saturate( ( 1.0 - abs( sin( _Time.y ) ) ) )));	
+			tempF = saturate( ( 1.0 - abs( sin( ( _Time.y + 0.2 ) ) ) ) );			
+			float3 DebugZone2 = (float3(tempF , tempF , tempF));
 			float3 DebugZone3 = (float3(saturate( ( 1.0 - abs( sin( ( _Time.y + 0.4 ) ) ) ) ) , 0.0 , 0.0));
-			float3 lerpResult362_g454 = lerp( lerpResult352_g454 , DebugZone3 , (float)saturate( ( _EmissionZone - 4 ) ));
-			
 			float3 DebugZone4 = (float3(0.0 , saturate( ( 1.0 - abs( sin( ( _Time.y + 0.6 ) ) ) ) ) , 0.0));
-			float3 lerpResult379_g454 = lerp( lerpResult362_g454 , DebugZone4 , (float)saturate( ( _EmissionZone - 5 ) ));
-			
-			
-// MAIN EMISSION	
 
-			float3 DebugEmissionColor = speed * saturate( ( lerpResult379_g454 + glowMaskInverted) ) ;
+// ===== MAIN EMISSION =====
+			float2 lumaZone =  GetZoneResult(_EmissionZone, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
+			float3 debugZoneResult =  debugZoneResult =  GetZoneResult(_EmissionZone, DebugGradient1, DebugGradient2, DebugGradient3, DebugZone1, DebugZone2, DebugZone3, DebugZone4);
+			float3 DebugEmissionColor = speed * saturate( ( debugZoneResult + glowMaskInverted) ) ;
 					
 			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( lumaZone, 0, 0.0) ) + glowMaskInverted + StoredTextureTo ) ) , float4( DebugEmissionColor , 0.0 ) , _DebugMode);			
 			lerpResult634_g454 = lerp(lerpResult634_g454, 1, _DisableWorldCtrl);
@@ -781,6 +765,8 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float4 EmissionGlowColor471_g454 = ( lerpResult634_g454 * float4( Emission436_g454 , 0.0 ) );
 			float2 AudioReactiveZone = ( float2( 0.673,0.985 ) - offsetHeroesVilains );			
 
+
+// ===== AUDIO REACTION =====
 // AUDIO SIMU
 			float2 debugAudioData = float2( saturate(sin( audioPatternsVariation ))  , saturate( sin( ( audioPatternsVariation + 0.5 ) ) ) );			
 			//.x = low, .y=high
@@ -815,13 +801,14 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 uv_GlowMaskRGB = i.uv_texcoord * _GlowMaskRGB_ST.xy + _GlowMaskRGB_ST.zw;
 			float3 GlowMaskRGBValue = (tex2D( _GlowMaskRGB, uv_GlowMaskRGB ).rgb).xyz;
 
+// ===== RGB GLOW =====
 //RED
 			float glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskR );
 
 			float2 lumaZoneResult =  GetZoneResult(_GlowMaskZoneR, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
 			float4 lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 			
-			float3 debugZoneResult = GetZoneResult(_EnableGlowMaskR, DebugGradient1,DebugGradient2,DebugGradient3, DebugZone1,DebugZone2,DebugZone3,DebugZone4);
+			 debugZoneResult = GetZoneResult(_EnableGlowMaskR, DebugGradient1,DebugGradient2,DebugGradient3, DebugZone1,DebugZone2,DebugZone3,DebugZone4);
 			float3 debugGlow = speedR * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
 			
 			float4 lerpResult633_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
