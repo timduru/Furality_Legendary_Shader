@@ -158,7 +158,6 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			half ASEVFace : VFACE;
 			float3 worldPos;
 			float4 screenPosition2051;
-			float3 ALAudioInfo;
 		};
 
 		struct SurfaceOutputCustomLightingCustom
@@ -784,7 +783,6 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 lumaAudioData = saturate( ( StoredTextureTo + tex2D( _Stored, lumaAudioReactiveZone ) ) );			
 
 // AUDIOLINK AUDIO
-			float2 ALAudioData = i.ALAudioInfo;
 			float AL_ALLBands = AudioLinkData(ALPASS_AUDIOLINK).r;
 			float AL_Bass = AudioLinkData(ALPASS_AUDIOBASS).r;
 			float AL_LOWMIDs = AudioLinkData(ALPASS_AUDIOLOWMIDS).r;
@@ -955,16 +953,6 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 				surfIN.internalSurfaceTtoW2 = IN.tSpace2.xyz;
 				SurfaceOutputCustomLightingCustom o;
 				UNITY_INITIALIZE_OUTPUT(SurfaceOutputCustomLightingCustom, o)
-
-					// AUDIOLINK 				
-					float band = 0.0390;
-				float2 coord = float2(0.0039, band);
-				//float2 val = tex2D(_AudioLink, coord).x;
-
-				surfIN.ALAudioInfo = AudioLinkData(ALPASS_AUDIOLINK + uint2(0, surfIN.uv_texcoord.y * 4.)).rrrr;
-				
-					
-				//saturate(tex2D(_AudioTexture, float2(ALZoneCoord, 0.3516)));
 
 // SURF			
 				surf( surfIN, o);
