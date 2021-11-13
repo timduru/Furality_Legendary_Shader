@@ -8,12 +8,20 @@ Outside of furality's worlds there were no automated effects, debug mode provide
 This modified version of the shader aims to enhance that by adding a few controls to allow a better use of the shader outside of furality's worlds
 through enhancing the Debug / Simulation mode.
 
-Additions:
+# Additions
+ ## AudioLink Support
+Basic Support Added: 
+- Luma Low Band  => AudioLink Bass band
+- Luma High Band => AudioLink Treble band
 
-	-Speed control of the 4 different emissions in Simulation mode
-	-Basic audio patterns variations
-	-allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission)
-	All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
+
+ ## Simulation mode
+
+- Speed control of the 4 different emissions in Simulation mode
+- Basic audio patterns variations
+- allow to temporarily disable Main Emission control by the world or debug mode (restores it to full emission)
+
+All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
 
 
 ![image](https://user-images.githubusercontent.com/2088877/141415723-b27392a7-5eeb-4e93-bc4b-1e26d75c6d30.png)
