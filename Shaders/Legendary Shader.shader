@@ -267,9 +267,9 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		}
 
 
-		float4 GetAudioAndTint(float4 input, float3 maskRGB, float4 tintChannel, int audioBand, float enableGlowMask,  float lowBlink, float lowPulse, float highBlink, float highPulse )		
+		float4 GetAudioAndTint(float4 input, float mask, float4 tintChannel, int audioBand, float enableGlowMask,  float lowBlink, float lowPulse, float highBlink, float highPulse )		
 		{						
-			float4 res = ( input * tintChannel * maskRGB.z );
+			float4 res = ( input * tintChannel * mask );
 			
 			// get audio band value
 			 res = lerp( res , ( res * lowBlink ) , (float)saturate( audioBand ));
@@ -813,7 +813,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float4 FinalGlowEmission = lerpResult596_g454;
 
 			float2 uv_GlowMaskRGB = i.uv_texcoord * _GlowMaskRGB_ST.xy + _GlowMaskRGB_ST.zw;
-			float3 GlowMask605_g454 = (tex2D( _GlowMaskRGB, uv_GlowMaskRGB ).rgb).xyz;
+			float3 GlowMaskRGBValue = (tex2D( _GlowMaskRGB, uv_GlowMaskRGB ).rgb).xyz;
 
 //RED
 			float glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskR );
@@ -826,7 +826,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			
 			float4 lerpResult633_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
 			
-			float4 FinalGlowR = GetAudioAndTint(lerpResult633_g454 , GlowMask605_g454, _GlowMaskTintR, _ReacitvityR, _EnableGlowMaskR, LowInfo, LowPulse, HighInfo, HighPulse);		
+			float4 FinalGlowR = GetAudioAndTint(lerpResult633_g454 , GlowMaskRGBValue.r, _GlowMaskTintR, _ReacitvityR, _EnableGlowMaskR, LowInfo, LowPulse, HighInfo, HighPulse);		
 
 
 //GREEN
@@ -840,7 +840,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			
 			float4 lerpResult630_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
 			
-			float4 FinalGlowG = GetAudioAndTint(lerpResult630_g454 , GlowMask605_g454, _GlowMaskTintG, _ReacitvityG, _EnableGlowMaskG, LowInfo, LowPulse, HighInfo, HighPulse);				
+			float4 FinalGlowG = GetAudioAndTint(lerpResult630_g454 , GlowMaskRGBValue.g, _GlowMaskTintG, _ReacitvityG, _EnableGlowMaskG, LowInfo, LowPulse, HighInfo, HighPulse);				
 			
 // BLUE			
 			glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskB );			
@@ -852,7 +852,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			debugGlow =  speedB * saturate( ( debugZoneResult + glowMaskNotEnabled) );			
 			
 			float4 lerpResult626_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
-			float4 FinalGlowB = GetAudioAndTint(lerpResult626_g454 , GlowMask605_g454, _GlowMaskTintB, _ReacitvityB, _EnableGlowMaskB, LowInfo, LowPulse, HighInfo, HighPulse);		
+			float4 FinalGlowB = GetAudioAndTint(lerpResult626_g454 , GlowMaskRGBValue.b, _GlowMaskTintB, _ReacitvityB, _EnableGlowMaskB, LowInfo, LowPulse, HighInfo, HighPulse);		
 
 //FINAL			
 			float4 FinalEmission = ( FinalGlowEmission + FinalGlowR + FinalGlowG + FinalGlowB );
