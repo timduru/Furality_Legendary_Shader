@@ -173,7 +173,6 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			UnityGIInput GIData;
 		};
 
-		
 		uniform float _Culling;
 		uniform float _SettingsMode;
 		uniform float _BlendModeIndex;
@@ -259,21 +258,13 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 		uniform float _DebugAudioPatterns = 0.5;
 
 		uniform float _AudioLinkOn = 1;
+
+		#define NBZONES 7
 		
-
-
-		float3 GetZoneResult( int zone, float3 Zone0, float3 Zone1, float3 Zone2, float3 Zone3, float3 Zone4, float3 Zone5, float3 Zone6)
+		float3 GetZoneResult( int zone, float3 zonesInfo[NBZONES])
 		{
-			float3 res = lerp( Zone0 , Zone1 , (float)saturate( zone ));
-			res = lerp( res , Zone2 , (float)saturate( ( zone - 1 ) ));
-			res = lerp( res , Zone3 , (float)saturate( ( zone - 2 ) ));
-			res = lerp( res , Zone4 , (float)saturate( ( zone - 3 ) ));
-			res = lerp( res , Zone5 , (float)saturate( ( zone - 4 ) ));
-			res = lerp( res , Zone6 , (float)saturate( ( zone - 5 ) ));
-
-			return res;
+			return zonesInfo[zone];
 		}
-
 
 		float4 GetAudioAndTint(float4 input, float mask, float4 tintChannel, int audioBand, float enableGlowMask,  float lowBlink, float lowPulse, float highBlink, float highPulse )		
 		{						
@@ -288,18 +279,11 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			
 			return res;
 		}
-		
-		
-		float3 GetZoneResult( int zone, float2 Zone0, float2 Zone1, float2 Zone2, float2 Zone3, float2 Zone4, float2 Zone5, float2 Zone6)
-		{
-			return GetZoneResult(zone, float3(Zone0, 0.0), float3(Zone1, 0.0),float3(Zone2, 0.0),float3(Zone3, 0.0),float3(Zone4, 0.0),float3(Zone5, 0.0),float3(Zone6, 0.0));
-		}
-
+				
 		float RoughnessCalc( float nh, float roughness )
 		{
 			return GGXTerm(nh, roughness);
 		}
-
 
 		float Hexagon( float2 p, float r )
 		{
@@ -689,11 +673,15 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 
 		void surf( Input i , inout SurfaceOutputCustomLightingCustom o )
 		{
-			float speed  = abs( sin( _Time.y *_DebugSpeedEmission ) );
+			float speed  = lerp(1, abs( sin( _Time.y *_DebugSpeedEmission ) ), _DebugMode); // Speed 1 if not debug mode (audiolink)
+			speed  = lerp(1, speed, _DebugMode); // Speed 1 if not debug mode (audiolink)
 			float speedR  = abs( sin( _Time.y * _DebugSpeedR  ) );
+			speedR  = lerp(1, speedR, _DebugMode); 
 			float speedG  = abs( sin( _Time.y * _DebugSpeedG ) );
+			speedG  = lerp(1, speedG, _DebugMode); 
 			float speedB  = abs( sin( _Time.y *_DebugSpeedB) );
 			float audioPatternsVariation  = abs( sin( 10*_Time.y * _DebugAudioPatterns ) );
+			speedB  = lerp(1, speedB, _DebugMode); 
 
 			o.SurfInput = i;
 			o.Normal = float3(0,0,1);
@@ -715,44 +703,64 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 rotator695_g454 = mul( i.uv_texcoord - float2( 0.5,0.5 ) , float2x2( cos695_g454 , -sin695_g454 , sin695_g454 , cos695_g454 )) + float2( 0.5,0.5 );
 			float2 GradientUVs698_g454 = rotator695_g454;
 			
+//========  GLOBAL INIT  ==========
 // LUMA TEXTURE
 			float StoredTextureTo = step( max( _Stored_TexelSize.z , _Stored_TexelSize.w ) , 500.0 );
-			
+			bool audioLinkActive = (_AudioLinkOn && AudioLinkIsAvailable());
+			bool needDebugMode = _DebugMode || audioLinkActive;
+
+//========  ZONE INFO  ==========
+	float3 lumaZonesData[NBZONES] ;
+	float3 simuZonesData[NBZONES];
+	
 //LUMA ZONE INFO EXTRACT
 	// GRADIENT ZONES x3
 			float4 coordZone01 = float4(9.4,0,0.57,0.49);
 			float2 appendResult34_g454 = (float2(( 1.0 / coordZone01.x ) , 0.0));
 			float2 appendResult42_g454 = (float2(coordZone01.z , coordZone01.w));
 			float2 GradientZone01 = clamp( (GradientUVs698_g454*appendResult34_g454 + appendResult42_g454) , float2( 0.571,0 ) , float2( 0.676,1 ) );
+			lumaZonesData[0] = float3(GradientZone01, 0.0);
 			
 			float4 coordZone02 = float4(9.4,0,0.6805,0.49);
 			float2 appendResult38_g454 = (float2(( 1.0 / coordZone02.x ) , 0.0));
 			float2 appendResult41_g454 = (float2(coordZone02.z , coordZone02.w));
 			float2 GradientZone02 = clamp( (GradientUVs698_g454*appendResult38_g454 + appendResult41_g454) , float2( 0.681,0 ) , float2( 0.786,1 ) );
+			lumaZonesData[1] = float3(GradientZone02, 0.0);
+			
 						
 			float4 coordZone03 = float4(9.4,0,0.791,0.49);
 			float2 appendResult57_g454 = (float2(( 1.0 / coordZone03.x ) , 0.0));
 			float2 appendResult52_g454 = (float2(coordZone03.z , coordZone03.w));			
 			float2 GradientZone03 = clamp( (GradientUVs698_g454*appendResult57_g454 + appendResult52_g454) , float2( 0.792,0 ) , float2( 0.896,1 ) );
+			lumaZonesData[2] = float3(GradientZone03, 0.0);
+
 
 	// HEROES / VILAIN ZONES x4
 			float2 offsetHeroesVilains = float2( 0.1,0.471 );
 			float2 Zone01 = ( float2( 0.955,0.992 ) - offsetHeroesVilains );
+			lumaZonesData[3] = float3(Zone01, 0.0);
 			float2 Zone02 = ( float2( 0.964,0.992 ) - offsetHeroesVilains );
+			lumaZonesData[4] = float3(Zone02, 0.0);
 			float2 Zone03 = ( float2( 0.955,0.978 ) - offsetHeroesVilains );
+			lumaZonesData[5] = float3(Zone03, 0.0);
 			float2 Zone04 = ( float2( 0.964,0.978 ) - offsetHeroesVilains );
+			lumaZonesData[6] = float3(Zone04, 0.0);
+
 			
 //  GENERATE DEBUG ZONE INFO
 			float glowMaskInverted = ( 1.0 - _EnableEmissionGlow );
 	// GRADIENT ZONES x3
 			float tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y ) ) ) ) );
 			float3 DebugGradient1 = (float3(tempF , tempF , tempF));
+			simuZonesData[0] = DebugGradient1;
 			
 			tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y + 0.3 ) ) ) ) );
 			float3 DebugGradient2 = (float3(tempF , tempF , 0.0));
+			simuZonesData[1] = DebugGradient2;
 			
 			tempF = saturate( ( 1.0 - abs( sin( ( GradientUVs698_g454.x + _Time.y + 0.6 ) ) ) ) );
 			float3 DebugGradient3 = (float3(0.0 , tempF , tempF));			
+			simuZonesData[2] = DebugGradient3;
 
 	// HEROES / VILAIN ZONES x4
 			float3 DebugZone1 = (float3(0.0 , 0.0 , saturate( ( 1.0 - abs( sin( _Time.y ) ) ) )));	
@@ -760,13 +768,19 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float3 DebugZone2 = (float3(tempF , tempF , tempF));
 			float3 DebugZone3 = (float3(saturate( ( 1.0 - abs( sin( ( _Time.y + 0.4 ) ) ) ) ) , 0.0 , 0.0));
 			float3 DebugZone4 = (float3(0.0 , saturate( ( 1.0 - abs( sin( ( _Time.y + 0.6 ) ) ) ) ) , 0.0));
+			simuZonesData[3] = DebugZone1;
+			simuZonesData[4] = DebugZone2;
+			simuZonesData[5] = DebugZone3;
+			simuZonesData[6] = DebugZone4;
+
 
 // ===== MAIN EMISSION =====
-			float2 lumaZone =  GetZoneResult(_EmissionZone, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
-			float3 debugZoneResult =  GetZoneResult(_EmissionZone, DebugGradient1, DebugGradient2, DebugGradient3, DebugZone1, DebugZone2, DebugZone3, DebugZone4);
+			float2 lumaZone =  GetZoneResult(_EmissionZone, lumaZonesData);
+			float3 debugZoneResult =  GetZoneResult(_EmissionZone, simuZonesData);
+
 			float3 DebugEmissionColor = speed * saturate( ( debugZoneResult + glowMaskInverted) ) ;
 					
-			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( lumaZone, 0, 0.0) ) + glowMaskInverted + StoredTextureTo ) ) , float4( DebugEmissionColor , 0.0 ) , _DebugMode);			
+			float4 lerpResult634_g454 =  lerp( saturate( ( tex2Dlod( _Stored, float4( lumaZone, 0, 0.0) ) + glowMaskInverted + StoredTextureTo ) ) , float4( DebugEmissionColor , 0.0 ) , needDebugMode);			
 			lerpResult634_g454 = lerp(lerpResult634_g454, 1, _DisableWorldCtrl);
 			
 			float2 uv_Emission = i.uv_texcoord * _Emission_ST.xy + _Emission_ST.zw;
@@ -786,25 +800,27 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float2 lumaAudioData = saturate( ( StoredTextureTo + tex2D( _Stored, lumaAudioReactiveZone ) ) );			
 
 // AUDIOLINK AUDIO
-			float AL_ALLBands = AudioLinkData(ALPASS_AUDIOLINK).r;
-			float AL_Bass = AudioLinkData(ALPASS_AUDIOBASS).r;
-			float AL_LOWMIDs = AudioLinkData(ALPASS_AUDIOLOWMIDS).r;
-			float AL_HIGHMIDs = AudioLinkData(ALPASS_AUDIOHIGHMIDS).r;
-			float AL_TREBLE = AudioLinkData(ALPASS_AUDIOTREBLE).r;
+			float AL_ALLBands = AudioLinkData(ALPASS_AUDIOLINK).rrrr;
+			float AL_Bass = AudioLinkData(ALPASS_AUDIOBASS).rrrr;
+			float AL_LOWMIDs = AudioLinkData(ALPASS_AUDIOLOWMIDS).rrrr;
+			float AL_HIGHMIDs = AudioLinkData(ALPASS_AUDIOHIGHMIDS).rrrr;
+			float AL_TREBLE = AudioLinkData(ALPASS_AUDIOTREBLE).rrrr;
 
 			float4 ALBands = float4(AL_Bass, AL_LOWMIDs, AL_HIGHMIDs, AL_TREBLE);
 
-			float2 ALTriggerData = float2(AL_Bass, AL_TREBLE);
+			float2 ALTriggerData = float2(AL_Bass, AL_HIGHMIDs);
+
+//  TODO GENERATE AUDIOLINK ZONE INFO based on Audiolink chords, use zones from debug atm.
 
 
 // AUDIO CALC
 //TODO autoswitch between Luma and AudioLink
 			float2 audioInfo = lerp(lumaAudioData, debugAudioData  , _DebugMode);
-			audioInfo = lerp(audioInfo, ALTriggerData, _AudioLinkOn);
+			audioInfo = lerp(audioInfo, ALTriggerData, audioLinkActive);
 
 			
 	//LOW
-			float LowInfo = audioInfo.r;
+			float LowInfo = audioInfo.x;
 			
 			float4 LowBlink = lerp( EmissionGlowColor471_g454 , ( EmissionGlowColor471_g454 * LowInfo ) , (float)saturate( _EmissionReactivity ));
 			float cos437_g454 = cos( radians( _LowsPulseDirection ) );
@@ -814,7 +830,7 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 			float LowPulse = saturate( ( rotator437_g454.y - ( 1.0 - LowInfo ) ) );
 			float4 lerpResult580_g454 = lerp( LowBlink , ( EmissionGlowColor471_g454 * LowPulse ) , (float)saturate( ( _EmissionReactivity - 1 ) ));
 	//HIGH	
-			float HighInfo = audioInfo.g;
+			float HighInfo = audioInfo.y;
 			
 			float4 HighBlink = lerp( lerpResult580_g454 , ( EmissionGlowColor471_g454 * HighInfo ) , (float)saturate( ( _EmissionReactivity - 2 ) ));
 			float cos456_g454 = cos( radians( _HighsPulseDirection ) );
@@ -834,13 +850,13 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 //RED
 			float glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskR );
 
-			float2 lumaZoneResult =  GetZoneResult(_GlowMaskZoneR, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);			
-			float4 lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
+			float3 lumaZoneResult =  GetZoneResult(_GlowMaskZoneR, lumaZonesData);			
+			float4 lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 			
-			 debugZoneResult = GetZoneResult(_EnableGlowMaskR, DebugGradient1,DebugGradient2,DebugGradient3, DebugZone1,DebugZone2,DebugZone3,DebugZone4);
+			debugZoneResult = GetZoneResult(_EnableGlowMaskR, simuZonesData);
 			float3 debugGlow = speedR * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
 			
-			float4 lerpResult633_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
+			float4 lerpResult633_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , needDebugMode);
 			
 			float4 FinalGlowR = GetAudioAndTint(lerpResult633_g454 , GlowMaskRGBValue.r, _GlowMaskTintR, _ReacitvityR, _EnableGlowMaskR, LowInfo, LowPulse, HighInfo, HighPulse);		
 
@@ -848,26 +864,26 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 //GREEN
 			glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskG );
 
-			lumaZoneResult =  GetZoneResult(_GlowMaskZoneG, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);
-			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
+			lumaZoneResult =  GetZoneResult(_GlowMaskZoneG, lumaZonesData);			
+			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 
-			debugZoneResult = GetZoneResult(_GlowMaskZoneG, DebugGradient1,DebugGradient2,DebugGradient3, DebugZone1,DebugZone2,DebugZone3,DebugZone4);
+			debugZoneResult = GetZoneResult(_EnableGlowMaskG, simuZonesData);
 			debugGlow = speedG * saturate( ( debugZoneResult + glowMaskNotEnabled ) );
 			
-			float4 lerpResult630_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
+			float4 lerpResult630_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , needDebugMode);
 			
 			float4 FinalGlowG = GetAudioAndTint(lerpResult630_g454 , GlowMaskRGBValue.g, _GlowMaskTintG, _ReacitvityG, _EnableGlowMaskG, LowInfo, LowPulse, HighInfo, HighPulse);				
 			
 // BLUE			
 			glowMaskNotEnabled = ( 1.0 - _EnableGlowMaskB );			
 
-			lumaZoneResult =  GetZoneResult(_GlowMaskZoneB, GradientZone01, GradientZone02, GradientZone03, Zone01, Zone02, Zone03, Zone04);
-			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
+			lumaZoneResult =  GetZoneResult(_GlowMaskZoneB, lumaZonesData);			
+			lumaGlow = saturate( ( tex2Dlod( _Stored, float4( lumaZoneResult, 0.0) ) + glowMaskNotEnabled + StoredTextureTo ) );
 
-			debugZoneResult = GetZoneResult(_GlowMaskZoneB, DebugGradient1,DebugGradient2,DebugGradient3, DebugZone1,DebugZone2,DebugZone3,DebugZone4);			
+			debugZoneResult = GetZoneResult(_EnableGlowMaskB, simuZonesData);
 			debugGlow =  speedB * saturate( ( debugZoneResult + glowMaskNotEnabled) );			
 			
-			float4 lerpResult626_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , _DebugMode);
+			float4 lerpResult626_g454 = lerp( lumaGlow , float4( debugGlow , 0.0 ) , needDebugMode);
 			float4 FinalGlowB = GetAudioAndTint(lerpResult626_g454 , GlowMaskRGBValue.b, _GlowMaskTintB, _ReacitvityB, _EnableGlowMaskB, LowInfo, LowPulse, HighInfo, HighPulse);		
 
 //FINAL			
