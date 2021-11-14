@@ -12,7 +12,7 @@ through enhancing the Debug / Simulation mode.
  ## AudioLink Support
 Basic Support Added: 
 - Luma Low Band  => AudioLink Bass band
-- Luma High Band => AudioLink Treble band
+- Luma High Band => AudioLink HighMids band
 
 
  ## Simulation mode
