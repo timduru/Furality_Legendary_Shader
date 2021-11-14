@@ -280,7 +280,7 @@ public class LegendsShaderGUI : ShaderGUI
         editor.ShaderProperty(toggle, new GUIContent("Simulation Mode", "Toggles simulated data for Luma Glow (can be used for debug or in non luma world)"));
         EditorGUI.indentLevel -= 2;
     }
-
+	
     void DoWorldControl()
     {
         MaterialProperty toggle = FindProperty("_DisableWorldCtrl");
@@ -863,6 +863,18 @@ public class LegendsShaderGUI : ShaderGUI
         EditorGUI.indentLevel -= 2;
     }
 
+    //AudioLink
+
+    void DoAudioLink()
+    {
+        MaterialProperty toggle = FindProperty("_AudioLinkOn");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(toggle, new GUIContent("AudioLink Mode", "Toggles AudioLink"));
+        EditorGUI.indentLevel -= 2;
+    }
+
+
+
     //Draw GUI
 
     public override void OnGUI(
@@ -985,7 +997,13 @@ public class LegendsShaderGUI : ShaderGUI
             }
         }
 
-        //Misc Settings
+//AUDIOLINK		
+        GUILayout.Label(" ");
+        GUILayout.Label("Audio Link", EditorStyles.boldLabel);
+		DoAudioLink();
+        
+		
+		//Misc Settings
 
         GUILayout.Label(" ");
         GUILayout.Label("Misc Settings", EditorStyles.boldLabel);

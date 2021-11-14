@@ -23,8 +23,8 @@ Basic Support Added:
 
 All these can be animated/changed in real time for more versatility so you can change them based on the music or current mood.	
 
+![image](https://user-images.githubusercontent.com/2088877/141443130-8b3471b4-702c-47c3-ae3c-376f4095f1f3.png)
 
-![image](https://user-images.githubusercontent.com/2088877/141415723-b27392a7-5eeb-4e93-bc4b-1e26d75c6d30.png)
 
 # Original shader features
 
