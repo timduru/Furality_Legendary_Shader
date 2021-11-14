@@ -277,15 +277,18 @@ Shader "Furality/Legendary Shader/Legendary Shader"
 
 		float4 GetAudioAndTint(float4 input, float mask, float4 tintChannel, int audioBand, float enableGlowMask,  float lowBlink, float lowPulse, float highBlink, float highPulse )		
 		{						
-			float4 res = ( input * tintChannel * mask );
+			float4 initial = ( input * tintChannel * mask );
 			
 			// get audio band value
-			 res = lerp( res , ( res * lowBlink ) , (float)saturate( audioBand ));
-			 res = lerp( res , ( res * lowPulse ) , (float)saturate( ( audioBand - 1 ) ));
-			 res = lerp( res , ( res * highBlink ) , (float)saturate( ( audioBand - 2 ) ));
-			 res = lerp( res , ( res * highPulse ) , (float)saturate( ( audioBand - 3 ) ));
+			float4 res;
+			res = lerp( initial, ( initial * lowBlink ) , (float)saturate( audioBand ));
+			res = lerp( res, ( initial * lowPulse ) , (float)saturate( ( audioBand - 1 ) ));
+			res = lerp( res, ( initial * highBlink ) , (float)saturate( ( audioBand - 2 ) ));
+			res = lerp( res, ( initial * highPulse ) , (float)saturate( ( audioBand - 3 ) ));
+			
 			return res;
 		}
+		
 		
 		float3 GetZoneResult( int zone, float2 Zone0, float2 Zone1, float2 Zone2, float2 Zone3, float2 Zone4, float2 Zone5, float2 Zone6)
 		{
