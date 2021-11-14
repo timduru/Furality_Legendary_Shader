@@ -5,14 +5,19 @@ This is a modified version of the original Furality Legendary Shader
 The original shader was made to work and be controlled in real time by VJs during Furality's events.
 Outside of furality's worlds there were no automated effects, debug mode provided a few effects but the speed was not configurable. 
 
-This modified version of the shader aims to enhance that by adding a few controls to allow a better use of the shader outside of furality's worlds
-through enhancing the Debug / Simulation mode.
+This modified version of the shader aims to enhance that by adding  AudioLink Support, as well as adding a few extra controls / fallbacks through enhancing the Debug / Simulation mode
 
 # Additions
  ## AudioLink Support
 Basic Support Added: 
 - Luma Low Band  => AudioLink Bass band
 - Luma High Band => AudioLink HighMids band
+
+
+Can be combined with:
+- Luma Zones effects
+- Simulation mode effects as fallback
+(if the glow mode of one channel is not configured to use audio reactivity, it will then use the corresponding channel effect as configured in the simulation mode)
 
 
  ## Simulation mode
