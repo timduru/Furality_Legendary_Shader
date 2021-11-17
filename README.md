@@ -287,7 +287,6 @@ All these can be animated/changed in real time for more versatility so you can c
 	- X-Bot model: 
 		https://sketchfab.com/3d-models/character-x-bot-479fc4feccba4ee1b3746b829aa26f0b
 
-# License
-	https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US
+
 	
 	
